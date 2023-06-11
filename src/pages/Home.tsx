@@ -1,14 +1,16 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Navbar from "../components/Navbar";
 import Footerbar from "../components/Footerbar";
 import { useNavigate } from "react-router-dom";
 import data from "../assets/data.json";
-import { Text, Flex, Grid, Input } from "@chakra-ui/react";
+import { Text, Flex, Grid, Input, Box } from "@chakra-ui/react";
 import Cardsheep from "../components/Cardsheep";
 
 const Home = () => {
     const [searchInput, setSearchInput] = useState<string>("");
     const navigate = useNavigate();
+    const cardNb = useRef(0);
+    let isEmpty = false;
 
     const isLoggedin = JSON.parse(localStorage.getItem("isLoggedin") || "");
     useEffect(() => {
@@ -42,15 +44,28 @@ const Home = () => {
             >
                 {data
                     .filter((sheep) => {
-                        if (searchInput == "") return sheep;
-                        else if (
+                        if (searchInput == "") {
+                            cardNb.current = 0;
+                            isEmpty = false;
+                            return sheep;
+                        } else if (
                             sheep.sheepName
                                 .toLowerCase()
                                 .includes(searchInput.toLowerCase())
-                        )
+                        ) {
+                            cardNb.current += 1;
+                            isEmpty = false;
                             return sheep;
+                        } else {
+                            cardNb.current += 1;
+                        }
                     })
                     .map((sheep) => {
+                        if (cardNb.current == 6) {
+                            console.log(cardNb.current);
+                            isEmpty = true;
+                            return;
+                        }
                         return (
                             <Cardsheep
                                 sheepName={sheep.sheepName}
@@ -60,6 +75,9 @@ const Home = () => {
                             />
                         );
                     })}
+                <Box display={isEmpty ? "flex" : "none"} key={"a"}>
+                    No data
+                </Box>
             </Grid>
             <Footerbar />
         </>
